@@ -100,5 +100,12 @@ ENV/
 # mypy
 .mypy_cache/
 
+###########################
+# __pycache__
+__pycache__
+
+# .idea
+.idea
+
 # settings
 settings.py
