@@ -1,40 +1,10 @@
 import settings
-
-import uuid
 import time
-
 import requests
-from decimal import *
+import telebot
 
-class Telebot(object):
-    def __init__(self, url, token):
-        self.url = url + "/bot" + token
-        self.session = requests.session()
-
-    def get_updates_json(self):
-        """Get updates."""
-        params = {'timeout': 100, 'offset': None}
-        response = self.session.get(self.url + '/getUpdates', data=params)
-        return response.json()
-
-    def last_update(self, data):
-        """Last update."""
-        results = data['result']
-        total_updates = len(results) - 1
-        return results[total_updates]
-
-    def get_chat_id(self, update):
-        chat_id = update['message']['chat']['id']
-        return chat_id
-
-    def send_message(self, chat_id, text):
-        params = {'chat_id': chat_id, 'text': text}
-        response = requests.post(self.url + '/sendMessage', data=params)
-        return response
-
-    #def send_message(self, chat_id, text):
-    #    """Send message."""
-    #    return self.session.get("%s/sendMessage?chat_id=%s&text=%s" % (self.url, chat_id, text)).json()
+#import uuid
+#from decimal import *
 
 class Client(object):
     def __init__(self, url, public_key, secret):
@@ -106,25 +76,56 @@ class Client(object):
 
 if __name__ == "__main__":
     client = Client("https://api.hitbtc.com", settings.hitbtc_public, settings.hitbtc_secret)
-    telebot = Telebot("https://api.telegram.org", settings.telegram_token)
+    bot = telebot.TeleBot(settings.telegram_token)
 
-    price = '0'
-    up = '↑'
-    down = '↓'
+    def deg_to_compass(num):
+        val = int((num / 22.5) + .5)
+        #arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+        arr = ["С", "ССВ", "СВ", "ВСВ", "В", "ВЮВ", "ЮВ", "ЮЮВ", "Ю", "ЮЮЗ", "ЮЗ", "ЗЮЗ", "З", "ЗСЗ", "СЗ", "ССЗ"]
+        return arr[(val % 16)]
 
-    while True:
+    @bot.message_handler(commands=['start', 'Start'])
+    def send_welcome(message):
+        bot.send_message(message.chat.id, 'Привет')
+
+    @bot.message_handler(commands=['help', 'Help'])
+    def send_help(message):
+        bot.send_message(message.chat.id, 'Допустимые команды:\n'
+                                          '/start\n'
+                                          '/help\n'
+                                          '/weather\n'
+                                          '/btc')
+
+    @bot.message_handler(commands=['weather', 'Weather'])
+    def send_weather(message):
+        url = "http://api.openweathermap.org/data/2.5/weather"
+        city_id = settings.city_id
+        token = settings.openweathermap_token
+        response = requests.session().get('%s?id=%s&units=metric&appid=%s' % (url, city_id, token)).json()
+
+        if(response['cod'] == 200):
+            t = str(response['main']['temp'])
+            wind_deg = response['wind']['deg']
+            wind_speed = str(response['wind']['speed'])
+            text = '\U0001f326 В Перми %s °C\n\U0001f32c %s %sм/с\n' % (t, deg_to_compass(wind_deg), wind_speed)
+            bot.send_message(message.chat.id, text)
+
+        #print(response)
+
+    @bot.message_handler(commands=['btc', 'Btc'])
+    def send_btc_rate(message):
         btc_usd = client.get_trades('BTCUSD')
+        text = '💰 BTC/USD: ' + btc_usd[0]['price']
+        bot.send_message(message.chat.id, text)
 
-        if(btc_usd[0]['price'] != price):
-            trend = up if btc_usd[0]['price'] > price else down
-            price = btc_usd[0]['price']
-            chat_id = telebot.get_chat_id(telebot.last_update(telebot.get_updates_json()))
-            message = 'BTC/USD: ' + btc_usd[0]['price'] + trend
+        #print(btc_usd)
 
-            telebot.send_message(chat_id, message)
-            print(price)
+    @bot.message_handler(func=lambda message: True)
+    def echo_all(message):
+        bot.reply_to(message, 'Извини, я тебя не понимаю. Попробуй ввести\n/start или /help')
+        #print(message.text)
 
-        time.sleep(1)
+    bot.polling()
 
     #for item in btc_usd:
     #    print(item['price'])
