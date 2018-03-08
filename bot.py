@@ -1,11 +1,13 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from telebot import types
+from datetime import datetime
+
 import settings
 import requests
 import telebot
 import time
-from datetime import datetime
 
 #import uuid
 #from decimal import *
@@ -82,14 +84,56 @@ if __name__ == "__main__":
     client = Client("https://api.hitbtc.com", settings.hitbtc_public, settings.hitbtc_secret)
     bot = telebot.TeleBot(settings.telegram_token)
 
-    """ UTILS """
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    COMMANDS
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    CMD_DATETIME = "🕐 Дата"
+    CMD_WEATHER = "\U0001f326 Погода"
+    CMD_BTC = "💰 BTC/USD"
+    CMD_HELP = "ℹ️ Помощь"
+
+    CMD_INFORMER = "📢 Информер"
+
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    UTILS
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    def generate_markup(buttons):
+        """
+        Создаем клавиатуру с кнопками
+
+        :param buttons: Массив кнопок
+        :return: Объект клавиатуры
+        """
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        for button in buttons:
+            markup.add(button)
+        return markup
+
+    def get_markup():
+        """
+        Выводит объект клавиатуры
+
+        :return: Объект клавиатуры
+        """
+        return generate_markup([CMD_HELP, CMD_DATETIME, CMD_WEATHER, CMD_BTC])
+
     def deg_to_compass(num):
+        """
+        Конвертирует направление ветра из градусов в розу
+
+        :param num: Градус
+        :return: Направление ветра по розе
+        """
         val = int((num / 22.5) + .5)
         #arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
         arr = ["С", "ССВ", "СВ", "ВСВ", "В", "ВЮВ", "ЮВ", "ЮЮВ", "Ю", "ЮЮЗ", "ЮЗ", "ЗЮЗ", "З", "ЗСЗ", "СЗ", "ССЗ"]
         return arr[(val % 16)]
 
     def get_weather():
+        """
+        Выводит погоду в Перми
+        :return: Сообщение о погоде в Перми на текущий день
+        """
         url = "http://api.openweathermap.org/data/2.5/weather"
         city_id = settings.city_id
         token = settings.openweathermap_token
@@ -105,29 +149,50 @@ if __name__ == "__main__":
         else:
             return False
 
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    HANDLERS
+    """""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    def process_step(message):
+        if message.text in ['/start', '/Start']:
+            send_welcome(message)
+        elif message.text in [CMD_HELP, '/help', '/Help']:
+            send_help(message)
+        elif message.text in [CMD_WEATHER, '/weather', 'Weather']:
+            send_weather(message)
+        elif message.text in [CMD_BTC, '/btc', '/Btc']:
+            send_btc_rate(message)
+        elif message.text in [CMD_DATETIME, '/datetime', '/Datetime']:
+            send_time(message)
+        elif message.text in [CMD_INFORMER, '/informer', '/Informer']:
+            send_weather_to_chat(message)
+        else:
+            echo_all(message)
+
     """ START """
     @bot.message_handler(commands=['start', 'Start'])
     def send_welcome(message):
-        bot.send_message(message.chat.id, 'Привет')
-
+        msg = bot.send_message(message.chat.id, 'Выбери действие:', reply_markup=get_markup())
+        bot.register_next_step_handler(msg, process_step)
 
     """ HELP """
     @bot.message_handler(commands=['help', 'Help'])
     def send_help(message):
-        bot.send_message(message.chat.id, 'Допустимые команды:\n'
-                                          '/start\n'
-                                          '/help\n'
-                                          '/datetime\n'
-                                          '/weather\n'
-                                          '/btc')
+        text = 'Допустимые команды:\n' \
+               '/start\n' \
+               '/help\n' \
+               '/datetime\n' \
+               '/weather\n' \
+               '/btc'
+        msg = bot.send_message(message.chat.id, text, reply_markup=get_markup())
+        bot.register_next_step_handler(msg, process_step)
 
     """ TIME """
     @bot.message_handler(commands=['datetime', 'Datetime'])
     def send_time(message):
         text = datetime.strftime(datetime.now(), "%d.%m.%Y %H:%M")
 
-        output = bot.send_message(message.chat.id, text)
-        print(output, text)
+        msg = bot.send_message(message.chat.id, text, reply_markup=get_markup())
+        bot.register_next_step_handler(msg, process_step)
 
     """ WEATHER """
     @bot.message_handler(commands=['weather', 'Weather'])
@@ -135,14 +200,16 @@ if __name__ == "__main__":
         text = get_weather()
 
         if text:
-            bot.send_message(message.chat.id, text)
+            msg = bot.send_message(message.chat.id, text, reply_markup=get_markup())
+            bot.register_next_step_handler(msg, process_step)
 
     """ BTC """
     @bot.message_handler(commands=['btc', 'Btc'])
     def send_btc_rate(message):
         btc_usd = client.get_trades('BTCUSD')
         text = '💰 BTC/USD: ' + btc_usd[0]['price']
-        bot.send_message(message.chat.id, text)
+        msg = bot.send_message(message.chat.id, text, reply_markup=get_markup())
+        bot.register_next_step_handler(msg, process_step)
 
     """ INFORMER KILO """
     @bot.message_handler(commands=['inform', 'Inform'])
@@ -150,12 +217,14 @@ if __name__ == "__main__":
         text = get_weather()
 
         if text:
-            bot.send_message(settings.kilo_chat_id, text)
+            msg = bot.send_message(settings.kilo_chat_id, text, reply_markup=get_markup())
+            bot.register_next_step_handler(msg, process_step)
 
     """ SORRY """
     @bot.message_handler(func=lambda message: True)
     def echo_all(message):
-        bot.reply_to(message, 'Извини, я тебя не понимаю. Попробуй ввести\n/start или /help')
+         msg = bot.reply_to(message, 'Извини, я тебя не понимаю. Попробуй ввести\n/start или /help', reply_markup=get_markup())
+         bot.register_next_step_handler(msg, process_step)
 
     bot.polling()
 
