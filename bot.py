@@ -4,6 +4,9 @@
 from telebot import types
 from datetime import datetime
 
+from urllib.request import urlopen
+from xml.etree import ElementTree as etree
+
 import settings
 import requests
 import telebot
@@ -87,9 +90,9 @@ if __name__ == "__main__":
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""
     COMMANDS
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""
-    CMD_DATETIME = "🕐 Дата"
+    CMD_DATETIME = "🕐 Дата и время"
     CMD_WEATHER = "\U0001f326 Погода"
-    CMD_BTC = "💰 BTC/USD"
+    CMD_RATES = "💰 Курсы валют"
     CMD_HELP = "ℹ️ Помощь"
 
     CMD_INFORMER = "📢 Информер"
@@ -105,8 +108,10 @@ if __name__ == "__main__":
         :return: Объект клавиатуры
         """
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        for button in buttons:
-            markup.add(button)
+
+        for row in buttons:
+            markup.add(*[telebot.types.InlineKeyboardButton(text=name) for name in row])
+
         return markup
 
     def get_markup():
@@ -115,7 +120,7 @@ if __name__ == "__main__":
 
         :return: Объект клавиатуры
         """
-        return generate_markup([CMD_HELP, CMD_DATETIME, CMD_WEATHER, CMD_BTC])
+        return generate_markup([[CMD_DATETIME, CMD_WEATHER], [CMD_RATES, CMD_HELP]])
 
     def deg_to_compass(num):
         """
@@ -159,8 +164,8 @@ if __name__ == "__main__":
             send_help(message)
         elif message.text in [CMD_WEATHER, '/weather', 'Weather']:
             send_weather(message)
-        elif message.text in [CMD_BTC, '/btc', '/Btc']:
-            send_btc_rate(message)
+        elif message.text in [CMD_RATES, '/rates', '/Rates']:
+            send_rates(message)
         elif message.text in [CMD_DATETIME, '/datetime', '/Datetime']:
             send_time(message)
         elif message.text in [CMD_INFORMER, '/informer', '/Informer']:
@@ -182,7 +187,7 @@ if __name__ == "__main__":
                '/help\n' \
                '/datetime\n' \
                '/weather\n' \
-               '/btc'
+               '/rates'
         msg = bot.send_message(message.chat.id, text, reply_markup=get_markup())
         bot.register_next_step_handler(msg, process_step)
 
@@ -203,11 +208,23 @@ if __name__ == "__main__":
             msg = bot.send_message(message.chat.id, text, reply_markup=get_markup())
             bot.register_next_step_handler(msg, process_step)
 
-    """ BTC """
-    @bot.message_handler(commands=['btc', 'Btc'])
-    def send_btc_rate(message):
-        btc_usd = client.get_trades('BTCUSD')
-        text = '💰 BTC/USD: ' + btc_usd[0]['price']
+    """ RATES """
+    @bot.message_handler(commands=['rates', 'Rates'])
+    def send_rates(message):
+
+        with urlopen("https://www.cbr.ru/scripts/XML_daily.asp", timeout=10) as r:
+            usd_rub = etree.parse(r).findtext('.//Valute[@ID="R01235"]/Value')
+
+        with urlopen("https://www.cbr.ru/scripts/XML_daily.asp", timeout=10) as r:
+            eur_rub = etree.parse(r).findtext('.//Valute[@ID="R01239"]/Value')
+
+        usd_rub = "%.2f" % float(usd_rub.replace(',', '.'))
+        eur_rub = "%.2f" % float(eur_rub.replace(',', '.'))
+        btc_usd_list = client.get_trades('BTCUSD')
+        btc_usd = "%.2f" % float(btc_usd_list[0]['price'].replace(',', '.'))
+        btc_rub = "%.2f" % float(float(btc_usd) * float(usd_rub))
+
+        text = '💰 BTC/USD: ' + btc_usd + '\n💰 BTC/RUB: ' + btc_rub + '\n💵 USD/RUB: ' + usd_rub + '\n💶 EUR/RUB: ' + eur_rub
         msg = bot.send_message(message.chat.id, text, reply_markup=get_markup())
         bot.register_next_step_handler(msg, process_step)
 
