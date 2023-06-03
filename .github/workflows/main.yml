@@ -11,7 +11,7 @@ jobs:
     
     steps:
     - name: test
-      run: echo ${{ secrets.SSH_USER }} > ~/temp.tmp && cat ~/temp.tmp
+      run: echo ${{ secrets.WORK_DIR }} > ~/temp.tmp && cat ~/temp.tmp
     - name: install ssh keys
       # check this thread to understand why its needed:
       # https://stackoverflow.com/a/70447517
