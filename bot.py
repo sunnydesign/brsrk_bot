@@ -134,13 +134,16 @@ if __name__ == "__main__":
         arr = ["С", "ССВ", "СВ", "ВСВ", "В", "ВЮВ", "ЮВ", "ЮЮВ", "Ю", "ЮЮЗ", "ЮЗ", "ЗЮЗ", "З", "ЗСЗ", "СЗ", "ССЗ"]
         return arr[(val % 16)]
 
-    def get_weather():
+    def get_weather(city_abbr = "prm"):
         """
         Выводит погоду в Перми
         :return: Сообщение о погоде в Перми на текущий день
         """
         url = "http://api.openweathermap.org/data/2.5/weather"
-        city_id = settings.city_id
+        if(city_abbr == "prm"):
+            city_id = settings.prm_city_id
+        if(city_abbr == "yvn"):
+            city_id = settings.yvn_city_id
         token = settings.openweathermap_token
         response = requests.session().get('%s?id=%s&units=metric&appid=%s' % (url, city_id, token)).json()
 
@@ -202,7 +205,7 @@ if __name__ == "__main__":
     """ WEATHER """
     @bot.message_handler(commands=['weather', 'Weather'])
     def send_weather(message):
-        text = get_weather()
+        text = get_weather("prm") + '\n\n' + get_weather("yvn")
 
         if text:
             msg = bot.send_message(message.chat.id, text, reply_markup=get_markup())
@@ -231,7 +234,7 @@ if __name__ == "__main__":
     """ INFORMER KILO """
     @bot.message_handler(commands=['inform', 'Inform'])
     def send_weather_to_chat(message):
-        text = get_weather()
+        text = get_weather("prm") + '\n\n' + get_weather("yvn")
 
         if text:
             msg = bot.send_message(settings.kilo_chat_id, text, reply_markup=get_markup())
