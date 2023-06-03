@@ -11,7 +11,7 @@ def generate_markup(buttons):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
     for row in buttons:
-        markup.add(*[telebot.types.InlineKeyboardButton(text=name) for name in row])
+        markup.add(*[types.InlineKeyboardButton(text=name) for name in row])
 
     return markup
 
