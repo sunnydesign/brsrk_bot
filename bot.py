@@ -1,6 +1,10 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+import time
+import requests
+
 from telebot import types
 from datetime import datetime
 from dotenv import load_dotenv
@@ -8,10 +12,7 @@ from urllib.request import urlopen
 from xml.etree import ElementTree as etree
 
 import settings
-import requests
 import telebot
-import time
-import os
 
 #import uuid
 #from decimal import *
