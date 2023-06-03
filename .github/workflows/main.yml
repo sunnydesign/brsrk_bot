@@ -21,7 +21,11 @@ jobs:
       run: ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && exit"
     - name: create env file
       run: |
-        ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "touch .env && echo HITBTC_PUBLIC=${{ secrets.HITBTC_PUBLIC }} >> .env && cat .env && exit"
+        ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+        "cd ${{ secrets.WORK_DIR }} && touch .env && \
+        echo HITBTC_PUBLIC=${{ secrets.HITBTC_PUBLIC }} >> .env && \
+        cat .env && \
+        exit"
     - name: restart supervisor daemon
       run: ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "echo ${{ secrets.USER_PASSWORD }} | sudo -S supervisorctl restart tgbot && exit"
     - name: cleanup
