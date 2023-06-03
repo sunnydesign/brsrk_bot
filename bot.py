@@ -5,7 +5,6 @@ import os
 import time
 import requests
 
-from telebot import types
 from datetime import datetime
 from dotenv import load_dotenv
 from urllib.request import urlopen
