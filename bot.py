@@ -17,7 +17,7 @@ import telebot
 #import uuid
 #from decimal import *
 
-load_dotenv()
+#load_dotenv()
 
 class Client(object):
     def __init__(self, url, public_key, secret):
