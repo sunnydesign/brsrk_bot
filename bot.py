@@ -88,8 +88,8 @@ class Client(object):
         return self.session.get("%s/account/transactions/%s" % (self.url, transaction_id)).json()
 
 if __name__ == "__main__":
-    client = Client("https://api.hitbtc.com", settings.hitbtc_public, settings.hitbtc_secret)
-    bot = telebot.TeleBot(settings.telegram_token)
+    client = Client("https://api.hitbtc.com", os.getenv('HITBTC_PUBLIC'), os.getenv('HITBTC_SECRET'))
+    bot = telebot.TeleBot(os.getenv('TELEGRAM_TOKEN'))
 
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""
     COMMANDS
@@ -150,7 +150,7 @@ if __name__ == "__main__":
         if(city_abbr == "yvn"):
             city_id = settings.yvn_city_id
             city_name_where = "В Ереване"
-        response = requests.session().get('%s?id=%s&units=metric&appid=%s' % (url, city_id, settings.openweathermap_token)).json()
+        response = requests.session().get('%s?id=%s&units=metric&appid=%s' % (url, city_id, os.getenv('OPENWEATHERMAP_TOKEN'))).json()
 
         if(response['cod'] == 200):
             t = str(response['main']['temp'])
