@@ -1,4 +1,5 @@
 import settings
+from telebot import types
 
 def generate_markup(buttons):
     """
