@@ -1,4 +1,5 @@
 import settings
+import requests
 from telebot import types
 
 def generate_markup(buttons):
