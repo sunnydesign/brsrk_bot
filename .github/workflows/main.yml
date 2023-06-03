@@ -18,8 +18,13 @@ jobs:
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         ssh-keyscan -t rsa ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
     - name: connect and pull
-      run: ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && exit"
-    - name: restart supervisor daemon
-      run: ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "echo ${{ secrets.USER_PASSWORD }} | sudo -S supervisorctl restart tgbot"
+      run: ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull"
+    - name: create env file
+      run: |
+        touch .env
+        echo HITBTC_PUBLIC=${{ secret.HITBTC_PUBLIC }} >> .env
+        cat .env
+    - name: restart supervisor daemon and exit
+      run: echo ${{ secrets.USER_PASSWORD }} | sudo -S supervisorctl restart tgbot && exit
     - name: cleanup
       run: rm -rf ~/.ssh
