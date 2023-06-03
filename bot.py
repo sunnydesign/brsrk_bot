@@ -136,14 +136,16 @@ if __name__ == "__main__":
 
     def get_weather(city_abbr = "prm"):
         """
-        Выводит погоду в Перми
-        :return: Сообщение о погоде в Перми на текущий день
+        Выводит погоду для Города
+        :return: Сообщение о погоде в Городе на текущий день
         """
         url = "http://api.openweathermap.org/data/2.5/weather"
         if(city_abbr == "prm"):
             city_id = settings.prm_city_id
+            city_name_where = "В Перми"
         if(city_abbr == "yvn"):
             city_id = settings.yvn_city_id
+            city_name_where = "В Ереване"
         token = settings.openweathermap_token
         response = requests.session().get('%s?id=%s&units=metric&appid=%s' % (url, city_id, token)).json()
 
@@ -151,7 +153,7 @@ if __name__ == "__main__":
             t = str(response['main']['temp'])
             wind_deg = response['wind']['deg']
             wind_speed = str(response['wind']['speed'])
-            text = '\U0001f326 В Перми %s °C\n\U0001f32c %s %sм/с\n' % (t, deg_to_compass(wind_deg), wind_speed)
+            text = '\U0001f326 %s %s °C\n\U0001f32c %s %sм/с\n' % (city_name_where, t, deg_to_compass(wind_deg), wind_speed)
 
             return text
         else:
