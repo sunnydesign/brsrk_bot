@@ -24,6 +24,9 @@ jobs:
         ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedKeyTypes=+ssh-rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
         "cd ${{ secrets.WORK_DIR }} && touch .env && \
         echo HITBTC_PUBLIC=${{ secrets.HITBTC_PUBLIC }} >> .env && \
+        echo HITBTC_SECRET=${{ secrets.HITBTC_SECRET }} >> .env && \
+        echo TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }} >> .env && \
+        echo OPENWEATHERMAP_TOKEN=${{ secrets.OPENWEATHERMAP_TOKEN }} >> .env && \
         cat .env && \
         exit"
     - name: restart supervisor daemon

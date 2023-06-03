@@ -3,7 +3,7 @@
 
 from telebot import types
 from datetime import datetime
-
+from dotenv import load_dotenv
 from urllib.request import urlopen
 from xml.etree import ElementTree as etree
 
@@ -11,9 +11,12 @@ import settings
 import requests
 import telebot
 import time
+import os
 
 #import uuid
 #from decimal import *
+
+load_dotenv()
 
 class Client(object):
     def __init__(self, url, public_key, secret):
@@ -84,7 +87,7 @@ class Client(object):
         return self.session.get("%s/account/transactions/%s" % (self.url, transaction_id)).json()
 
 if __name__ == "__main__":
-    client = Client("https://api.hitbtc.com", settings.hitbtc_public, settings.hitbtc_secret)
+    client = Client("https://api.hitbtc.com", os.getenv('HITBTC_PUBLIC'), settings.hitbtc_secret)
     bot = telebot.TeleBot(settings.telegram_token)
 
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""
