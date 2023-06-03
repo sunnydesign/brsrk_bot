@@ -7,7 +7,7 @@ import requests
 
 from telebot import types
 from datetime import datetime
-#from dotenv import load_dotenv
+from dotenv import load_dotenv
 from urllib.request import urlopen
 from xml.etree import ElementTree as etree
 
@@ -17,7 +17,7 @@ import telebot
 #import uuid
 #from decimal import *
 
-#load_dotenv()
+load_dotenv()
 
 class Client(object):
     def __init__(self, url, public_key, secret):
