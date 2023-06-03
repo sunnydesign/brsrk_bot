@@ -1,3 +1,4 @@
+import os
 import settings
 import requests
 from telebot import types
