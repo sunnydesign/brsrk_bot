@@ -22,7 +22,7 @@ jobs:
     - name: create env file
       run: |
         touch .env
-        echo HITBTC_PUBLIC=${{ secret.HITBTC_PUBLIC }} >> .env
+        echo HITBTC_PUBLIC=${{ secrets.HITBTC_PUBLIC }} >> .env
         cat .env
     - name: restart supervisor daemon and exit
       run: echo ${{ secrets.USER_PASSWORD }} | sudo -S supervisorctl restart tgbot && exit
