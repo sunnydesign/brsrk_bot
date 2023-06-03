@@ -12,6 +12,7 @@ from urllib.request import urlopen
 from xml.etree import ElementTree as etree
 
 import settings
+import utils
 import telebot
 
 #import uuid
@@ -91,76 +92,76 @@ if __name__ == "__main__":
     client = Client("https://api.hitbtc.com", os.getenv('HITBTC_PUBLIC'), os.getenv('HITBTC_SECRET'))
     bot = telebot.TeleBot(os.getenv('TELEGRAM_TOKEN'))
 
-    """""""""""""""""""""""""""""""""""""""""""""""""""""""""
-    COMMANDS
-    """""""""""""""""""""""""""""""""""""""""""""""""""""""""
-    CMD_DATETIME = "🕐 Дата и время"
-    CMD_WEATHER = "\U0001f326 Погода"
-    CMD_RATES = "💰 Курсы валют"
-    CMD_HELP = "ℹ️ Помощь"
+    # """""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    # COMMANDS
+    # """""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    # CMD_DATETIME = "🕐 Дата и время"
+    # CMD_WEATHER = "\U0001f326 Погода"
+    # CMD_RATES = "💰 Курсы валют"
+    # CMD_HELP = "ℹ️ Помощь"
 
-    CMD_INFORMER = "📢 Информер"
+    # CMD_INFORMER = "📢 Информер"
 
-    """""""""""""""""""""""""""""""""""""""""""""""""""""""""
-    UTILS
-    """""""""""""""""""""""""""""""""""""""""""""""""""""""""
-    def generate_markup(buttons):
-        """
-        Создаем клавиатуру с кнопками
+    # """""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    # UTILS
+    # """""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    # def generate_markup(buttons):
+    #     """
+    #     Создаем клавиатуру с кнопками
 
-        :param buttons: Массив кнопок
-        :return: Объект клавиатуры
-        """
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    #     :param buttons: Массив кнопок
+    #     :return: Объект клавиатуры
+    #     """
+    #     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
-        for row in buttons:
-            markup.add(*[telebot.types.InlineKeyboardButton(text=name) for name in row])
+    #     for row in buttons:
+    #         markup.add(*[telebot.types.InlineKeyboardButton(text=name) for name in row])
 
-        return markup
+    #     return markup
 
-    def get_markup():
-        """
-        Выводит объект клавиатуры
+    # def get_markup():
+    #     """
+    #     Выводит объект клавиатуры
 
-        :return: Объект клавиатуры
-        """
-        return generate_markup([[CMD_DATETIME, CMD_WEATHER], [CMD_RATES, CMD_HELP]])
+    #     :return: Объект клавиатуры
+    #     """
+    #     return generate_markup([[CMD_DATETIME, CMD_WEATHER], [CMD_RATES, CMD_HELP]])
 
-    def deg_to_compass(num):
-        """
-        Конвертирует направление ветра из градусов в розу
+    # def deg_to_compass(num):
+    #     """
+    #     Конвертирует направление ветра из градусов в розу
 
-        :param num: Градус
-        :return: Направление ветра по розе
-        """
-        val = int((num / 22.5) + .5)
-        #arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
-        arr = ["С", "ССВ", "СВ", "ВСВ", "В", "ВЮВ", "ЮВ", "ЮЮВ", "Ю", "ЮЮЗ", "ЮЗ", "ЗЮЗ", "З", "ЗСЗ", "СЗ", "ССЗ"]
-        return arr[(val % 16)]
+    #     :param num: Градус
+    #     :return: Направление ветра по розе
+    #     """
+    #     val = int((num / 22.5) + .5)
+    #     #arr = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+    #     arr = ["С", "ССВ", "СВ", "ВСВ", "В", "ВЮВ", "ЮВ", "ЮЮВ", "Ю", "ЮЮЗ", "ЮЗ", "ЗЮЗ", "З", "ЗСЗ", "СЗ", "ССЗ"]
+    #     return arr[(val % 16)]
 
-    def get_weather(city_abbr = "prm"):
-        """
-        Выводит погоду для Города
-        :return: Сообщение о погоде в Городе на текущий день
-        """
-        url = "http://api.openweathermap.org/data/2.5/weather"
-        if(city_abbr == "prm"):
-            city_id = settings.prm_city_id
-            city_name_where = "В Перми"
-        if(city_abbr == "yvn"):
-            city_id = settings.yvn_city_id
-            city_name_where = "В Ереване"
-        response = requests.session().get('%s?id=%s&units=metric&appid=%s' % (url, city_id, os.getenv('OPENWEATHERMAP_TOKEN'))).json()
+    # def get_weather(city_abbr = "prm"):
+    #     """
+    #     Выводит погоду для Города
+    #     :return: Сообщение о погоде в Городе на текущий день
+    #     """
+    #     url = "http://api.openweathermap.org/data/2.5/weather"
+    #     if(city_abbr == "prm"):
+    #         city_id = settings.prm_city_id
+    #         city_name_where = "В Перми"
+    #     if(city_abbr == "yvn"):
+    #         city_id = settings.yvn_city_id
+    #         city_name_where = "В Ереване"
+    #     response = requests.session().get('%s?id=%s&units=metric&appid=%s' % (url, city_id, os.getenv('OPENWEATHERMAP_TOKEN'))).json()
 
-        if(response['cod'] == 200):
-            t = str(response['main']['temp'])
-            wind_deg = response['wind']['deg']
-            wind_speed = str(response['wind']['speed'])
-            text = '\U0001f326 %s %s °C\n\U0001f32c %s %sм/с\n' % (city_name_where, t, deg_to_compass(wind_deg), wind_speed)
+    #     if(response['cod'] == 200):
+    #         t = str(response['main']['temp'])
+    #         wind_deg = response['wind']['deg']
+    #         wind_speed = str(response['wind']['speed'])
+    #         text = '\U0001f326 %s %s °C\n\U0001f32c %s %sм/с\n' % (city_name_where, t, deg_to_compass(wind_deg), wind_speed)
 
-            return text
-        else:
-            return False
+    #         return text
+    #     else:
+    #         return False
 
     """""""""""""""""""""""""""""""""""""""""""""""""""""""""
     HANDLERS
@@ -168,15 +169,15 @@ if __name__ == "__main__":
     def process_step(message):
         if message.text in ['/start', '/Start']:
             send_welcome(message)
-        elif message.text in [CMD_HELP, '/help', '/Help']:
+        elif message.text in [settings.CMD_HELP, '/help', '/Help']:
             send_help(message)
-        elif message.text in [CMD_WEATHER, '/weather', 'Weather']:
+        elif message.text in [settings.CMD_WEATHER, '/weather', 'Weather']:
             send_weather(message)
-        elif message.text in [CMD_RATES, '/rates', '/Rates']:
+        elif message.text in [settings.CMD_RATES, '/rates', '/Rates']:
             send_rates(message)
-        elif message.text in [CMD_DATETIME, '/datetime', '/Datetime']:
+        elif message.text in [settings.CMD_DATETIME, '/datetime', '/Datetime']:
             send_time(message)
-        elif message.text in [CMD_INFORMER, '/informer', '/Informer']:
+        elif message.text in [settings.CMD_INFORMER, '/informer', '/Informer']:
             send_weather_to_chat(message)
         else:
             echo_all(message)
@@ -184,7 +185,7 @@ if __name__ == "__main__":
     """ START """
     @bot.message_handler(commands=['start', 'Start'])
     def send_welcome(message):
-        msg = bot.send_message(message.chat.id, 'Выбери действие:', reply_markup=get_markup())
+        msg = bot.send_message(message.chat.id, 'Выбери действие:', reply_markup=utils.get_markup())
         bot.register_next_step_handler(msg, process_step)
 
     """ HELP """
@@ -196,7 +197,7 @@ if __name__ == "__main__":
                '/datetime\n' \
                '/weather\n' \
                '/rates'
-        msg = bot.send_message(message.chat.id, text, reply_markup=get_markup())
+        msg = bot.send_message(message.chat.id, text, reply_markup=utils.get_markup())
         bot.register_next_step_handler(msg, process_step)
 
     """ TIME """
@@ -204,16 +205,16 @@ if __name__ == "__main__":
     def send_time(message):
         text = datetime.strftime(datetime.now(), "%d.%m.%Y %H:%M")
 
-        msg = bot.send_message(message.chat.id, text, reply_markup=get_markup())
+        msg = bot.send_message(message.chat.id, text, reply_markup=utils.get_markup())
         bot.register_next_step_handler(msg, process_step)
 
     """ WEATHER """
     @bot.message_handler(commands=['weather', 'Weather'])
     def send_weather(message):
-        text = get_weather("prm") + '\n\n' + get_weather("yvn")
+        text = utils.get_weather("prm") + '\n\n' + utils.get_weather("yvn")
 
         if text:
-            msg = bot.send_message(message.chat.id, text, reply_markup=get_markup())
+            msg = bot.send_message(message.chat.id, text, reply_markup=utils.get_markup())
             bot.register_next_step_handler(msg, process_step)
 
     """ RATES """
@@ -233,22 +234,22 @@ if __name__ == "__main__":
         btc_rub = "%.2f" % float(float(btc_usd) * float(usd_rub))
 
         text = '💰 BTC/USD: ' + btc_usd + '\n💰 BTC/RUB: ' + btc_rub + '\n💵 USD/RUB: ' + usd_rub + '\n💶 EUR/RUB: ' + eur_rub
-        msg = bot.send_message(message.chat.id, text, reply_markup=get_markup())
+        msg = bot.send_message(message.chat.id, text, reply_markup=utils.get_markup())
         bot.register_next_step_handler(msg, process_step)
 
     """ INFORMER KILO """
     @bot.message_handler(commands=['inform', 'Inform'])
     def send_weather_to_chat(message):
-        text = get_weather("prm") + '\n\n' + get_weather("yvn")
+        text = utils.get_weather("prm") + '\n\n' + utils.get_weather("yvn")
 
         if text:
-            msg = bot.send_message(settings.kilo_chat_id, text, reply_markup=get_markup())
+            msg = bot.send_message(settings.kilo_chat_id, text, reply_markup=utils.get_markup())
             bot.register_next_step_handler(msg, process_step)
 
     """ SORRY """
     @bot.message_handler(func=lambda message: True)
     def echo_all(message):
-         msg = bot.reply_to(message, 'Извини, я тебя не понимаю. Попробуй ввести\n/start или /help', reply_markup=get_markup())
+         msg = bot.reply_to(message, 'Извини, я тебя не понимаю. Попробуй ввести\n/start или /help', reply_markup=utils.get_markup())
          bot.register_next_step_handler(msg, process_step)
 
     bot.polling()
